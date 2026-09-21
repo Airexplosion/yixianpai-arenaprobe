@@ -1,0 +1,7 @@
+bin/
+obj/
+plugins/
+dist/
+*.dll
+*.user
+*.zip

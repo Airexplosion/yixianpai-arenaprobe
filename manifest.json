@@ -1,0 +1,12 @@
+{
+  "id": "com.yx.arenaprobe",
+  "name": "练习场探针（实验）",
+  "version": "0.3.0",
+  "author": "yxp",
+  "description": "练习场方案 B 的实机探针，不是成品：CTRL+ALT+0 状态 / 1 从大厅进场 / 2 本地对局状态 / 3 换手牌 / 4 打木人 / 5 回大厅。只在不在任何房间里时工作，全程不发包。",
+  "sdkVersion": ">=1.0.0 <2.0.0",
+  "sandboxOnly": true,
+  "entry": "plugins/ArenaProbe.dll",
+  "entryType": "YxArenaProbe.ArenaProbeMod",
+  "provides": { "hooks": ["CardPanel.RefineCardAsync", "CardPanel.MoveToGrid", "CardPanel.MoveToHand", "CardPanel.TryUpgradeHandCard", "CardPanel.TryFuseHandCard", "CardPanel.InsertCard"], "hotkeys": ["CTRL+ALT+0", "CTRL+ALT+1", "CTRL+ALT+2", "CTRL+ALT+3", "CTRL+ALT+4", "CTRL+ALT+5"] }
+}

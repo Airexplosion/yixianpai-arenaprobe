@@ -1,0 +1,38 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net40</TargetFramework>
+    <AssemblyName>ArenaProbe</AssemblyName>
+    <RootNamespace>YxArenaProbe</RootNamespace>
+    <LangVersion>7.3</LangVersion>
+    <DebugType>none</DebugType>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <NoWarn>CS1701;CS1702</NoWarn>
+    <OutputPath>plugins\</OutputPath>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="src\*.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net40" Version="1.0.3" PrivateAssets="all" />
+    <ProjectReference Include="..\..\sdk\Yx.ModSdk.Core\Yx.ModSdk.Core.csproj"><Private>false</Private></ProjectReference>
+    <ProjectReference Include="..\..\sdk\Yx.ModSdk\Yx.ModSdk.csproj"><Private>false</Private></ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="DarkSun.HotUpdate"><HintPath>$(YxRefs)DarkSun.HotUpdate.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="DarkSun.UI"><HintPath>$(YxRefs)DarkSun.UI.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="DarkSun.Utility"><HintPath>$(YxRefs)DarkSun.Utility.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="wProtobuf"><HintPath>$(YxRefs)wProtobuf.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="UniRx"><HintPath>$(YxRefs)UniRx.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="UniTask"><HintPath>$(YxRefs)UniTask.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="Unity.TextMeshPro"><HintPath>$(YxRefs)Unity.TextMeshPro.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="UnityEngine.CoreModule"><HintPath>$(YxRefs)UnityEngine.CoreModule.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="UnityEngine.UI"><HintPath>$(YxRefs)UnityEngine.UI.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="UnityEngine.UIModule"><HintPath>$(YxRefs)UnityEngine.UIModule.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="UnityEngine.InputLegacyModule"><HintPath>$(YxRefs)UnityEngine.InputLegacyModule.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="UnityEngine.TextRenderingModule"><HintPath>$(YxRefs)UnityEngine.TextRenderingModule.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="UnityEngine.TextCoreModule"><HintPath>$(YxRefs)UnityEngine.TextCoreModule.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="ILRuntime"><HintPath>$(YxRefs)ILRuntime.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="ILRuntime.Mono.Cecil"><HintPath>$(YxRefs)ILRuntime.Mono.Cecil.dll</HintPath><Private>false</Private></Reference>
+  </ItemGroup>
+</Project>
