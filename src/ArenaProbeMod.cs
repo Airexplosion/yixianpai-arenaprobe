@@ -55,14 +55,14 @@ namespace YxArenaProbe
             try
             {
                 ctx.Hooks.Prefix("CardPanel", "RefineCardAsync", 2, OnRefinePrefix);
-                _refineHook = "已登记";
+                _refineHook = ctx.T("已登记", "installed");
             }
             catch (Exception e)
             {
-                _refineHook = "登记失败";
-                ctx.Log.Warn("炼化钩子登记失败（炼化在练习场里会发包并报断开）：" + e.Message);
+                _refineHook = ctx.T("登记失败", "install failed");
+                ctx.Log.Warn(ctx.T("炼化钩子登记失败（炼化在练习场里会发包并报断开）：", "Refine hook install failed (refining in the arena sends packets and reports a disconnect): ") + e.Message);
             }
-            ctx.Log.Info("探针就绪：CTRL+ALT+0 状态 / 1 进场 / 2 本地对局状态 / 3 换手牌 / 4 开打 / 5 回大厅");
+            ctx.Log.Info(ctx.T("探针就绪：CTRL+ALT+0 状态 / 1 进场 / 2 本地对局状态 / 3 换手牌 / 4 开打 / 5 回大厅", "Probe ready: CTRL+ALT+0 status / 1 enter / 2 local match state / 3 swap hand / 4 fight / 5 back to lobby"));
         }
 
         // ── 小工具 ─────────────────────────────────────────────────────────
@@ -72,12 +72,12 @@ namespace YxArenaProbe
         static string B(bool value) { return value ? "true" : "false"; }
 
         /// <summary>不在房间里才返回 null；否则返回拒绝的原因。</summary>
-        static string RoomGuard()
+        string RoomGuard()
         {
             GameClient client = GameClientUtil.client;
-            if (client == null) return "没有 GameClient";
-            if (client.isInRoom) return "你在一个房间 / 对局里（isInRoom），探针拒绝工作";
-            if (client.needReconnectToRoom) return "有待重连的房间（needReconnectToRoom），探针拒绝工作";
+            if (client == null) return Context.T("没有 GameClient", "no GameClient");
+            if (client.isInRoom) return Context.T("你在一个房间 / 对局里（isInRoom），探针拒绝工作", "you're in a room / match (isInRoom); probe refuses to run");
+            if (client.needReconnectToRoom) return Context.T("有待重连的房间（needReconnectToRoom），探针拒绝工作", "a room is pending reconnect (needReconnectToRoom); probe refuses to run");
             return null;
         }
 
@@ -88,7 +88,7 @@ namespace YxArenaProbe
 
         void Fail(string name, Exception e)
         {
-            Context.Log.Error("[" + name + "] 抛异常", e);
+            Context.Log.Error("[" + name + Context.T("] 抛异常", "] threw"), e);
         }
 
         // ── 移牌离线静音 ────────────────────────────────────────────────────
@@ -155,7 +155,7 @@ namespace YxArenaProbe
             }
             catch (Exception e)
             {
-                ctx.Log.Warn("移牌钩子 " + method + " 登记失败（这条路在练习场里会发包并报断开）：" + e.Message);
+                ctx.Log.Warn(ctx.T("移牌钩子 ", "Card-move hook ") + method + ctx.T(" 登记失败（这条路在练习场里会发包并报断开）：", " install failed (this path sends packets and reports a disconnect in the arena): ") + e.Message);
             }
         }
 
@@ -217,14 +217,14 @@ namespace YxArenaProbe
             try
             {
                 string guard = RoomGuard();
-                if (guard != null) { Step("1", "拒绝：" + guard); return; }
-                if (SceneLoader.isLoading) { Step("1", "拒绝：场景正在加载"); return; }
-                if (SceneLoader.currentSceneName != "Lobby") { Step("1", "拒绝：只能从大厅进，当前 " + SceneLoader.currentSceneName); return; }
+                if (guard != null) { Step("1", Context.T("拒绝：", "Refused: ") + guard); return; }
+                if (SceneLoader.isLoading) { Step("1", Context.T("拒绝：场景正在加载", "Refused: scene is loading")); return; }
+                if (SceneLoader.currentSceneName != "Lobby") { Step("1", Context.T("拒绝：只能从大厅进，当前 ", "Refused: can only enter from the lobby, currently ") + SceneLoader.currentSceneName); return; }
                 // 没有要播的战斗：PlayBattle → Execute(null) 直接 return，场景应当空着立起来。
                 BattleManager.currentBattleResult = null;
                 _entered = true;
                 SceneLoader.LoadScene("Battle");
-                Step("1", "已请求加载 Battle 场景（回放分支）。等场景出来后按 CTRL+ALT+0 看状态，再按 2");
+                Step("1", Context.T("已请求加载 Battle 场景（回放分支）。等场景出来后按 CTRL+ALT+0 看状态，再按 2", "Requested loading the Battle scene (replay branch). Once it's up, press CTRL+ALT+0 for status, then 2"));
             }
             catch (Exception e) { Fail("1", e); }
         }
@@ -256,18 +256,18 @@ namespace YxArenaProbe
             try
             {
                 string guard = RoomGuard();
-                if (guard != null) { Step("2", "拒绝：" + guard); return; }
-                if (!_entered || SceneLoader.currentSceneName != "Battle") { Step("2", "拒绝：先按 1 进场（当前 " + SceneLoader.currentSceneName + "）"); return; }
+                if (guard != null) { Step("2", Context.T("拒绝：", "Refused: ") + guard); return; }
+                if (!_entered || SceneLoader.currentSceneName != "Battle") { Step("2", Context.T("拒绝：先按 1 进场（当前 ", "Refused: press 1 to enter first (currently ") + SceneLoader.currentSceneName + Context.T("）", ")")); return; }
                 BattleManager bm = BattleManager.Instance;
-                if (bm == null) { Step("2", "拒绝：没有 BattleManager"); return; }
+                if (bm == null) { Step("2", Context.T("拒绝：没有 BattleManager", "Refused: no BattleManager")); return; }
 
                 string myUid = GameClientUtil.uid;
                 var gs = new GameStatus();
                 gs.round = 1;
                 gs.timer = 999;
                 gs.gameMode = GameMode.PracticeMode;
-                BattlePlayerData me = MakePlayer(myUid, "练习场", 60);
-                BattlePlayerData dummy = MakePlayer(DummyUid, "木人", 300);
+                BattlePlayerData me = MakePlayer(myUid, Context.T("练习场", "Practice"), 60);
+                BattlePlayerData dummy = MakePlayer(DummyUid, Context.T("木人", "Dummy"), 300);
                 dummy.isAI = true;
                 me.nextOpponent = DummyUid;
                 dummy.nextOpponent = myUid;
@@ -280,7 +280,7 @@ namespace YxArenaProbe
                 for (int i = 0; i < Grids; i++) priv.usedCards.Add(0);
 
                 bm.Refresh(gs);
-                Step("2", "已调用 Refresh(本地 GameStatus)：PracticeMode、我 + 木人、手牌 " + N(HandA.Length) + " 张。看备战界面出没出来、牌能不能拖");
+                Step("2", Context.T("已调用 Refresh(本地 GameStatus)：PracticeMode、我 + 木人、手牌 ", "Called Refresh(local GameStatus): PracticeMode, me + Dummy, ") + N(HandA.Length) + Context.T(" 张。看备战界面出没出来、牌能不能拖", " hand cards. Check whether the setup screen shows and cards can be dragged"));
             }
             catch (Exception e) { Fail("2", e); }
         }
@@ -292,10 +292,10 @@ namespace YxArenaProbe
             try
             {
                 string guard = RoomGuard();
-                if (guard != null) { Step("3", "拒绝：" + guard); return; }
+                if (guard != null) { Step("3", Context.T("拒绝：", "Refused: ") + guard); return; }
                 BattleManager bm = BattleManager.Instance;
                 GameStatus gs = bm != null ? bm.currentGameStatus : null;
-                if (gs == null) { Step("3", "拒绝：还没有本地对局状态（先按 2）"); return; }
+                if (gs == null) { Step("3", Context.T("拒绝：还没有本地对局状态（先按 2）", "Refused: no local match state yet (press 2 first)")); return; }
                 BattlePlayerPrivateData priv = gs.playerPrivateData;
                 priv.handCards.Clear();
                 for (int i = 0; i < HandB.Length; i++) priv.handCards.Add(HandB[i]);
@@ -303,7 +303,7 @@ namespace YxArenaProbe
                 pd.publicData = gs.GetSelfBattlePlayerData() ?? gs.GetMainPlayerData();
                 pd.privateData = priv;
                 bm.RefreshMainPlayerInfo(pd);
-                Step("3", "已把手牌换成第二组（" + N(HandB.Length) + " 张）并 RefreshMainPlayerInfo");
+                Step("3", Context.T("已把手牌换成第二组（", "Swapped hand to the second set (") + N(HandB.Length) + Context.T(" 张）并 RefreshMainPlayerInfo", " cards) and RefreshMainPlayerInfo"));
             }
             catch (Exception e) { Fail("3", e); }
         }
@@ -337,11 +337,11 @@ namespace YxArenaProbe
             try
             {
                 string guard = RoomGuard();
-                if (guard != null) { Step("4", "拒绝：" + guard); return; }
+                if (guard != null) { Step("4", Context.T("拒绝：", "Refused: ") + guard); return; }
                 BattleManager bm = BattleManager.Instance;
-                if (bm == null || !_entered) { Step("4", "拒绝：先按 1 进场"); return; }
+                if (bm == null || !_entered) { Step("4", Context.T("拒绝：先按 1 进场", "Refused: press 1 to enter first")); return; }
                 BattleExecuter be = bm.defaultBattleExecuter;
-                if (be != null && be.isExecuting) { Step("4", "拒绝：上一场还在演"); return; }
+                if (be != null && be.isExecuting) { Step("4", Context.T("拒绝：上一场还在演", "Refused: the previous battle is still playing")); return; }
 
                 List<int> board = ReadBoard();
                 int placed = 0;
@@ -360,11 +360,11 @@ namespace YxArenaProbe
                 r.battleTime = 1800;
                 r.round = 1;
                 r.gameMode = GameMode.PracticeMode;
-                r.p1.publicData = MakePlayer(myUid, "练习场", 60);
+                r.p1.publicData = MakePlayer(myUid, Context.T("练习场", "Practice"), 60);
                 r.p1.publicData.level = Level.InvalidLevel;      // InvalidLevel：总血 = extraMaxHp，填多少是多少
                 r.p1.publicData.lastRoundData.level = Level.InvalidLevel;
                 FillBoard(r.p1.publicData, board);
-                r.p2.publicData = MakePlayer(DummyUid, "木人", 300);
+                r.p2.publicData = MakePlayer(DummyUid, Context.T("木人", "Dummy"), 300);
                 r.p2.publicData.level = Level.InvalidLevel;
                 r.p2.publicData.lastRoundData.level = Level.InvalidLevel;
                 r.firstPlayerId = myUid;
@@ -382,7 +382,7 @@ namespace YxArenaProbe
 
                 BattleManager.currentBattleResult = r;
                 bm.PlayBattle();
-                Step("4", "已 PlayBattle：我方 " + N(placed == 0 ? HandA.Length : placed) + " 张（" + (placed == 0 ? "场上没牌，用第一组手牌" : "读自场上") + "）对木人 300 血");
+                Step("4", Context.T("已 PlayBattle：我方 ", "PlayBattle done: my side ") + N(placed == 0 ? HandA.Length : placed) + Context.T(" 张（", " cards (") + (placed == 0 ? Context.T("场上没牌，用第一组手牌", "no cards on board, used first hand") : Context.T("读自场上", "read from board")) + Context.T("）对木人 300 血", ") vs Dummy 300 HP"));
             }
             catch (Exception e) { Fail("4", e); }
         }
@@ -394,12 +394,12 @@ namespace YxArenaProbe
             try
             {
                 string guard = RoomGuard();
-                if (guard != null) { Step("5", "拒绝：" + guard); return; }
-                if (!_entered) { Step("5", "拒绝：不是探针带进来的场景，不动它"); return; }
+                if (guard != null) { Step("5", Context.T("拒绝：", "Refused: ") + guard); return; }
+                if (!_entered) { Step("5", Context.T("拒绝：不是探针带进来的场景，不动它", "Refused: not a scene the probe entered; leaving it alone")); return; }
                 _entered = false;
                 BattleManager.currentBattleResult = null;
                 SceneLoader.LoadScene("Lobby");
-                Step("5", "已请求回大厅");
+                Step("5", Context.T("已请求回大厅", "Requested return to lobby"));
             }
             catch (Exception e) { Fail("5", e); }
         }
